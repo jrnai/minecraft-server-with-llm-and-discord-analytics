@@ -38,6 +38,8 @@ ANALYST_DAILY_HOUR=21
 ANALYST_TIMEZONE=Asia/Kuala_Lumpur
 ```
 
+For normal Discord messages like `chat hello`, enable **Message Content Intent** for your bot in the Discord Developer Portal.
+
 ## 3. Start Backend and Dashboard
 
 ```powershell
@@ -63,6 +65,7 @@ Discord slash commands:
 - `/status` shows server and AI status.
 - `/players` lists known online/offline players.
 - `/ask` asks the AI from Discord.
+- `chat hello` in a Discord channel asks the AI without using a slash command.
 - `/analyst` generates an AI server report for the last hour, day, or week.
 - `/recap` generates a daily AI server recap on demand.
 - `/say` broadcasts a Discord message into Minecraft chat.

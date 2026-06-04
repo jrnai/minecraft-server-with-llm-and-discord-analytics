@@ -23,6 +23,8 @@
 - `/status` returns backend state.
 - `/players` handles empty player list.
 - `/ask` returns an AI response.
+- Discord message `chat hello` returns an AI response.
+- Discord messages without `chat` are ignored by the AI.
 - `/summary` handles empty event history.
 - Bot startup fails fast when `DISCORD_TOKEN` is missing.
 

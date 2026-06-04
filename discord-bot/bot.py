@@ -22,11 +22,13 @@ ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "")
 DISCORD_ANALYST_CHANNEL_ID = os.getenv("DISCORD_ANALYST_CHANNEL_ID")
 ANALYST_DAILY_HOUR = int(os.getenv("ANALYST_DAILY_HOUR", "21"))
 ANALYST_TIMEZONE = os.getenv("ANALYST_TIMEZONE", "Asia/Kuala_Lumpur")
+AI_TRIGGER = os.getenv("AI_TRIGGER", "chat").strip() or "chat"
 
 
 class MinecraftLabBot(discord.Client):
     def __init__(self) -> None:
         intents = discord.Intents.default()
+        intents.message_content = True
         super().__init__(intents=intents)
         self.tree = app_commands.CommandTree(self)
 
@@ -62,6 +64,32 @@ async def post_json(path: str, payload: dict, *, admin: bool = False) -> dict:
 @client.event
 async def on_ready() -> None:
     print(f"Logged in as {client.user} at {datetime.now(timezone.utc).isoformat()}")
+
+
+@client.event
+async def on_message(message: discord.Message) -> None:
+    if message.author.bot:
+        return
+
+    question = extract_chat_trigger(message.content)
+    if question is None:
+        return
+
+    async with message.channel.typing():
+        try:
+            data = await post_json(
+                "/api/ai/ask",
+                {
+                    "question": question,
+                    "source": "discord-message",
+                    "player_name": message.author.display_name,
+                },
+            )
+        except httpx.HTTPError as exc:
+            await message.reply(f"AI backend is offline or rejected the request: `{exc}`", mention_author=False)
+            return
+
+    await message.reply(str(data["response"])[:1900], mention_author=False)
 
 
 @client.tree.command(description="Show Minecraft server and AI status.")
@@ -409,6 +437,19 @@ def fmt_time(value: object) -> str:
         return dt.strftime("%Y-%m-%d %H:%M UTC")
     except ValueError:
         return text[:24]
+
+
+def extract_chat_trigger(content: str) -> str | None:
+    trigger = AI_TRIGGER
+    normalized = content.strip()
+    if normalized.lower() == trigger:
+        return trigger
+
+    prefix = f"{trigger} "
+    if normalized.lower().startswith(prefix.lower()):
+        return normalized[len(prefix):].strip() or trigger
+
+    return None
 
 
 def main() -> None:

@@ -6,7 +6,7 @@ It gives you:
 
 - A Paper plugin source project that forwards Minecraft events to a backend and polls for safe commands.
 - A FastAPI backend that stores events, tracks players, calls an LLM provider, and broadcasts dashboard updates.
-- A Discord bot that queries the backend for server status, players, summaries, and AI answers.
+- A Discord bot that queries the backend for server status, players, summaries, and AI answers. It can also answer normal Discord messages that start with `chat`.
 - A React dashboard for server operations, chat/AI logs, metrics, and safe admin actions.
 - Docker Compose for PostgreSQL, backend, dashboard, and bot.
 
