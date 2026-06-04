@@ -58,7 +58,7 @@ gradle build
 
 The first complete loop is:
 
-1. Player says `@Guide hello` in Minecraft.
+1. Player says `chat hello` in Minecraft.
 2. Paper plugin posts a `player_chat` event to the backend.
 3. Backend stores the event, calls the configured LLM provider, validates the response, and queues a chat command.
 4. Paper plugin polls commands and broadcasts the AI response in Minecraft.

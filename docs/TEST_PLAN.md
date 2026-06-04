@@ -6,8 +6,8 @@
 - `POST /api/minecraft/events` rejects missing or bad `X-Bridge-Token`.
 - Valid `player_join` creates or updates a player identity.
 - Valid `player_leave` closes the active session.
-- `player_chat` without `@Guide` logs only the event.
-- `player_chat` with `@Guide` creates an AI log and queues one command.
+- `player_chat` without `chat` logs only the event.
+- `player_chat` with `chat` creates an AI log and queues one command.
 - Malformed JSON returns a validation error without crashing.
 - `POST /api/admin/broadcast` rejects missing or bad `X-Admin-Token`.
 
@@ -41,4 +41,3 @@
 - Paper server restarts while backend remains running.
 - Backend restarts while Paper plugin keeps polling.
 - Discord API is unavailable.
-

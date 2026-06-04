@@ -22,7 +22,7 @@ Body:
     "name": "Steve"
   },
   "data": {
-    "message": "@Guide hello"
+    "message": "chat hello"
   }
 }
 ```

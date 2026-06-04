@@ -132,7 +132,7 @@ Restart Paper.
 In Minecraft chat:
 
 ```text
-@Guide hello
+chat hello
 ```
 
 Expected result:

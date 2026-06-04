@@ -77,8 +77,9 @@ async def ingest_minecraft_event(event_in: MinecraftEventIn, db: Session = Depen
     queued = 0
     if event.type == "player_chat":
         message = str(event.data.get("message", ""))
-        if settings.ai_trigger.lower() in message.lower():
-            queued = await respond_to_player_message(db, event, message)
+        triggered_message = extract_triggered_message(message)
+        if triggered_message is not None:
+            queued = await respond_to_player_message(db, event, triggered_message)
 
     return {"ok": True, "eventId": event.id, "queuedCommands": queued}
 
@@ -323,9 +324,24 @@ def update_player_state(db: Session, event: ServerEvent) -> None:
             session.left_at = event.timestamp
 
 
-async def respond_to_player_message(db: Session, event: ServerEvent, message: str) -> int:
-    cleaned = message.replace(settings.ai_trigger, "").strip() or message
-    prompt = assistant_prompt(settings.ai_name, cleaned, recent_context(db), event.player_name)
+def extract_triggered_message(message: str) -> str | None:
+    trigger = settings.ai_trigger.strip()
+    if not trigger:
+        return None
+
+    normalized = message.strip()
+    if normalized.lower() == trigger.lower():
+        return trigger
+
+    prefix = f"{trigger} "
+    if normalized.lower().startswith(prefix.lower()):
+        return normalized[len(prefix):].strip() or trigger
+
+    return None
+
+
+async def respond_to_player_message(db: Session, event: ServerEvent, player_message: str) -> int:
+    prompt = assistant_prompt(settings.ai_name, player_message, recent_context(db), event.player_name)
     result = await complete_ai_action(prompt, fallback_target=event.player_name)
     action = sanitize_ai_action(result.action, fallback_target=event.player_name)
 
