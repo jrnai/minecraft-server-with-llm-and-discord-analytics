@@ -1,0 +1,6 @@
+name: MinecraftLlmBridge
+version: ${version}
+main: dev.mcserver.bridge.MinecraftLlmBridgePlugin
+api-version: "26.1"
+author: mcserver
+description: Sends Paper server events to the Minecraft LLM backend and polls safe assistant commands.
