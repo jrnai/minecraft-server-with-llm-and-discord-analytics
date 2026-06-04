@@ -64,6 +64,14 @@ The first complete loop is:
 4. Paper plugin polls commands and broadcasts the AI response in Minecraft.
 5. Discord bot and React dashboard read the same backend state.
 
+## Start and Stop
+
+For the exact day-to-day commands to start or shut down Docker, the Paper server, playit.gg, and the Discord bot, see:
+
+```text
+docs/RUNBOOK.md
+```
+
 ## LLM Providers
 
 The backend defaults to a mock provider so the system works before you configure API keys.
@@ -93,4 +101,3 @@ LLM_MODEL=llama3.2:3b
 - The LLM can only produce allowlisted actions.
 - The Paper plugin only executes `minecraft_chat`, `minecraft_whisper`, and `minecraft_broadcast` command types.
 - Do not expose the backend directly to the public internet.
-
