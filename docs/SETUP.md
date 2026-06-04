@@ -34,6 +34,7 @@ DISCORD_TOKEN=your_discord_bot_token
 DISCORD_GUILD_ID=your_test_server_id
 DASHBOARD_PUBLIC_URL=http://localhost:5173
 DISCORD_ANALYST_CHANNEL_ID=channel_id_for_daily_recaps
+DISCORD_CHAT_CHANNEL_ID=channel_id_for_minecraft_chat_relay
 ANALYST_DAILY_HOUR=21
 ANALYST_TIMEZONE=Asia/Kuala_Lumpur
 ```
@@ -75,6 +76,7 @@ Discord slash commands:
 
 `/say` and `/tell` use the backend `ADMIN_TOKEN`, so the bot must run with the same `.env` file as the backend.
 If `DISCORD_ANALYST_CHANNEL_ID` is set, the bot posts one automatic daily recap at `ANALYST_DAILY_HOUR`.
+If `DISCORD_CHAT_CHANNEL_ID` is set, the bot relays Minecraft player chat into that Discord channel.
 
 ## 3a. Optional Local Backend Development
 
@@ -141,6 +143,7 @@ chat hello
 Expected result:
 
 - Backend receives a `player_chat` event.
+- Backend receives recurring `player_snapshot` events while players are online.
 - Dashboard updates.
 - Backend queues an AI response.
 - Paper plugin broadcasts or whispers `[Guide] ...`.

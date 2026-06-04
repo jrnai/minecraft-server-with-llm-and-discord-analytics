@@ -16,6 +16,7 @@
 - Join, leave, chat, death, and advancement events reach backend.
 - Plugin keeps running if backend is offline.
 - Polling receives queued commands and marks them delivered.
+- Online players emit recurring `player_snapshot` events with coordinates.
 - Unsupported backend command actions are ignored.
 
 ## Discord Bot
@@ -25,6 +26,7 @@
 - `/ask` returns an AI response.
 - Discord message `chat hello` returns an AI response.
 - Discord messages without `chat` are ignored by the AI.
+- Minecraft player chat relays into `DISCORD_CHAT_CHANNEL_ID` when configured.
 - `/summary` handles empty event history.
 - Bot startup fails fast when `DISCORD_TOKEN` is missing.
 

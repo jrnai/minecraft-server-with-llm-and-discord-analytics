@@ -3,5 +3,5 @@ bridge-token: "change-this-bridge-token"
 server-name: "main"
 poll-commands-every-ticks: 40
 health-event-every-ticks: 600
+player-snapshot-every-ticks: 100
 emit-block-events: false
-

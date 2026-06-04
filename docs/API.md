@@ -27,6 +27,8 @@ Body:
 }
 ```
 
+The plugin also emits `player_snapshot` events while players are online. These include latest world, coordinates, health, food, game mode, held item, nearby players, and play time so the LLM can answer questions about where players are and what they are doing.
+
 ### `GET /api/minecraft/commands?server=main`
 
 Headers:

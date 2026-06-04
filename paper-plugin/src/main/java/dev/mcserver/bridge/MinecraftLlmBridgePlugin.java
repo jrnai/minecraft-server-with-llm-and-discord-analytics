@@ -35,6 +35,7 @@ public final class MinecraftLlmBridgePlugin extends JavaPlugin implements Listen
     private String bridgeToken;
     private String serverName;
     private boolean emitBlockEvents;
+    private long playerSnapshotTicks;
 
     @Override
     public void onEnable() {
@@ -46,6 +47,7 @@ public final class MinecraftLlmBridgePlugin extends JavaPlugin implements Listen
         bridgeToken = getConfig().getString("bridge-token", "change-this-bridge-token");
         serverName = getConfig().getString("server-name", "main");
         emitBlockEvents = getConfig().getBoolean("emit-block-events", false);
+        playerSnapshotTicks = getConfig().getLong("player-snapshot-every-ticks", 100L);
 
         Bukkit.getPluginManager().registerEvents(this, this);
 
@@ -53,6 +55,7 @@ public final class MinecraftLlmBridgePlugin extends JavaPlugin implements Listen
         long healthTicks = getConfig().getLong("health-event-every-ticks", 600L);
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::pollCommands, pollTicks, pollTicks);
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::sendHealthEvent, 100L, healthTicks);
+        Bukkit.getScheduler().runTaskTimer(this, this::sendPlayerSnapshots, 120L, playerSnapshotTicks);
 
         getLogger().info("Minecraft LLM bridge enabled for backend " + backendUrl);
     }
@@ -132,6 +135,12 @@ public final class MinecraftLlmBridgePlugin extends JavaPlugin implements Listen
             + "\"data\":" + dataJson
             + "}";
         sendPayload("/api/minecraft/events", payload);
+    }
+
+    private void sendPlayerSnapshots() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            postEvent("player_snapshot", player, playerSnapshotData(player));
+        }
     }
 
     private void pollCommands() {
@@ -235,6 +244,28 @@ public final class MinecraftLlmBridgePlugin extends JavaPlugin implements Listen
             + "\"x\":" + block.getX() + ","
             + "\"y\":" + block.getY() + ","
             + "\"z\":" + block.getZ()
+            + "}";
+    }
+
+    private String playerSnapshotData(Player player) {
+        String heldItem = player.getInventory().getItemInMainHand().getType().key().asString();
+        String nearbyPlayers = player.getNearbyEntities(32, 32, 32).stream()
+            .filter(entity -> entity instanceof Player)
+            .map(entity -> quote(entity.getName()))
+            .reduce((left, right) -> left + "," + right)
+            .orElse("");
+
+        return "{"
+            + "\"world\":" + quote(player.getWorld().getName()) + ","
+            + "\"x\":" + player.getLocation().getBlockX() + ","
+            + "\"y\":" + player.getLocation().getBlockY() + ","
+            + "\"z\":" + player.getLocation().getBlockZ() + ","
+            + "\"health\":" + Math.round(player.getHealth()) + ","
+            + "\"food\":" + player.getFoodLevel() + ","
+            + "\"gameMode\":" + quote(player.getGameMode().name()) + ","
+            + "\"heldItem\":" + quote(heldItem) + ","
+            + "\"nearbyPlayers\":[" + nearbyPlayers + "],"
+            + "\"playTimeTicks\":" + player.getStatistic(Statistic.PLAY_ONE_MINUTE)
             + "}";
     }
 

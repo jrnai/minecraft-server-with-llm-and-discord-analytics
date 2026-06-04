@@ -20,6 +20,7 @@ BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000").rstrip("/")
 DASHBOARD_URL = os.getenv("DASHBOARD_PUBLIC_URL", "http://localhost:5173")
 ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "")
 DISCORD_ANALYST_CHANNEL_ID = os.getenv("DISCORD_ANALYST_CHANNEL_ID")
+DISCORD_CHAT_CHANNEL_ID = os.getenv("DISCORD_CHAT_CHANNEL_ID")
 ANALYST_DAILY_HOUR = int(os.getenv("ANALYST_DAILY_HOUR", "21"))
 ANALYST_TIMEZONE = os.getenv("ANALYST_TIMEZONE", "Asia/Kuala_Lumpur")
 AI_TRIGGER = os.getenv("AI_TRIGGER", "chat").strip() or "chat"
@@ -41,6 +42,8 @@ class MinecraftLabBot(discord.Client):
             await self.tree.sync()
         if DISCORD_ANALYST_CHANNEL_ID:
             self.loop.create_task(daily_analyst_loop())
+        if DISCORD_CHAT_CHANNEL_ID:
+            self.loop.create_task(minecraft_chat_relay_loop())
 
 
 client = MinecraftLabBot()
@@ -349,6 +352,47 @@ async def daily_analyst_loop() -> None:
                 except Exception as exc:
                     print(f"Daily analyst report failed: {exc}")
         await asyncio.sleep(60)
+
+
+async def minecraft_chat_relay_loop() -> None:
+    await client.wait_until_ready()
+    last_seen_id = await latest_event_id()
+    while not client.is_closed():
+        try:
+            events = await get_json("/api/events?limit=25")
+            if isinstance(events, list):
+                new_events = [
+                    event
+                    for event in events
+                    if int(event.get("id", 0)) > last_seen_id and event.get("type") == "player_chat"
+                ]
+                for event in sorted(new_events, key=lambda item: int(item.get("id", 0))):
+                    await relay_minecraft_chat(event)
+                    last_seen_id = max(last_seen_id, int(event.get("id", 0)))
+        except Exception as exc:
+            print(f"Minecraft chat relay failed: {exc}")
+        await asyncio.sleep(3)
+
+
+async def latest_event_id() -> int:
+    try:
+        events = await get_json("/api/events?limit=1")
+    except Exception:
+        return 0
+    if not isinstance(events, list) or not events:
+        return 0
+    return int(events[0].get("id", 0))
+
+
+async def relay_minecraft_chat(event: dict) -> None:
+    channel = client.get_channel(int(DISCORD_CHAT_CHANNEL_ID)) if DISCORD_CHAT_CHANNEL_ID else None
+    if not channel or not hasattr(channel, "send"):
+        return
+    player = event.get("player", {}).get("name") or "Minecraft"
+    message = str((event.get("data") or {}).get("message", "")).strip()
+    if not message:
+        return
+    await channel.send(f"**{player}**: {message[:1800]}")
 
 
 def dashboard_caption(data: dict) -> str:
